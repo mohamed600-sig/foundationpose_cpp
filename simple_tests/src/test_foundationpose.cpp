@@ -9,10 +9,10 @@
 
 using namespace inference_core;
 using namespace detection_6d;
-
-static const std::string refiner_engine_path_ = "/workspace/models/refiner_hwc_dynamic_fp16.engine";
-static const std::string scorer_engine_path_  = "/workspace/models/scorer_hwc_dynamic_fp16.engine";
-static const std::string demo_data_path_      = "/workspace/test_data/mustard0";
+static const std::string __root_path="/workspace";
+static const std::string refiner_engine_path_ = __root_path+"/models/refiner_hwc_dynamic_fp16.engine";
+static const std::string scorer_engine_path_  = __root_path+"/models/scorer_hwc_dynamic_fp16.engine";
+static const std::string demo_data_path_      = __root_path+"/test_data/mustard0";
 static const std::string demo_textured_obj_path = demo_data_path_ + "/mesh/textured_simple.obj";
 static const std::string demo_textured_map_path = demo_data_path_ + "/mesh/texture_map.png";
 static const std::string demo_name_             = "mustard";
@@ -61,14 +61,18 @@ TEST(foundationpose_test, test)
   Eigen::Matrix4f out_pose;
   CHECK(foundation_pose->Register(rgb.clone(), depth, mask, demo_name_, out_pose, refine_itr));
   LOG(WARNING) << "first Pose : " << out_pose;
-
+  
   // [temp] for test
   cv::Mat regist_plot = rgb.clone();
   cv::cvtColor(regist_plot, regist_plot, cv::COLOR_RGB2BGR);
   auto draw_pose = ConvertPoseMesh2BBox(out_pose, mesh_loader);
   draw3DBoundingBox(intrinsic_in_mat, draw_pose, 480, 640, object_dimension, regist_plot);
-  cv::imwrite("/workspace/test_data/test_foundationpose_plot.png", regist_plot);
-
+  cv::imwrite(__root_path+"/test_data/test_foundationpose_plot.png", regist_plot);
+  
+  // while (1)
+  // {
+  //   /* code */
+  // }
   auto rgb_paths = get_files_in_directory(demo_data_path_ + "/rgb/");
   std::sort(rgb_paths.begin(), rgb_paths.end());
   std::vector<std::string> frame_ids;
@@ -100,7 +104,7 @@ TEST(foundationpose_test, test)
     out_pose = track_pose;
   }
 
-  saveVideo(result_image_sequence, "/workspace/test_data/test_foundationpose_result.mp4");
+  saveVideo(result_image_sequence, __root_path+"/test_data/test_foundationpose_result.mp4");
 }
 
 TEST(foundationpose_test, speed_register)
