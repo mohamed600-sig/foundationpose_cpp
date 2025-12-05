@@ -10,6 +10,95 @@
 
 #include <glog/logging.h>
 #include <glog/log_severity.h>
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <vector>
+namespace utils {
+namespace algorithm {
+class Ritter_bounding_sphere {
+public:
+  Ritter_bounding_sphere(aiVector3D *array_of_vertexes, uint16_t no_of_vertexes):bounding_sphere_radius(0.0f)
+  {
+    att_object_vertexes.resize(no_of_vertexes);
+    for (uint32_t vertex_count = 0; vertex_count < no_of_vertexes; vertex_count++)
+    {
+      att_object_vertexes[vertex_count]=array_of_vertexes[vertex_count];
+    }
+  }
+
+  std::pair<aiVector3D, float> get_approximation_bounding_sphere()
+  {
+    initial_assumption();
+    update_bounding_sphere();
+    return {bounding_sphere_center, bounding_sphere_radius};
+  }
+
+private:
+  std::vector<aiVector3D> att_object_vertexes;
+  aiVector3D              bounding_sphere_center;
+  float                   bounding_sphere_radius;
+  void                    initial_assumption()
+  {
+    // Step 1: Pick an initial point (first vertex)
+    aiVector3D p0 = att_object_vertexes[0];
+    // Step 2: Find the farthest point from p0
+    aiVector3D p1       = p0;
+    float      maxDist2 = 0.0f;
+    for (const auto &vertices : att_object_vertexes)
+    {
+      aiVector3D diff  = vertices - p0;
+      float      dist2 = diff.SquareLength();
+      if (dist2 > maxDist2)
+      {
+        maxDist2 = dist2;
+        p1       = vertices;
+      }
+    }
+    // Step 3: Find the farthest point from p1
+    aiVector3D p2 = p1;
+    maxDist2      = 0.0f;
+    for (const auto &vertices : att_object_vertexes)
+    {
+      aiVector3D diff  = vertices - p1;
+      float      dist2 = diff.SquareLength();
+      if (dist2 > maxDist2)
+      {
+        maxDist2 = dist2;
+        p2       = vertices;
+      }
+    }
+
+    // Step 4: Initialize sphere center and radius
+    bounding_sphere_center = (p1 + p2) * 0.5f;
+    bounding_sphere_radius = (p2 - p1).Length() * 0.5f;
+  }
+
+  void update_bounding_sphere()
+  {
+    // Step 5: Adjust sphere to include all vertices
+    for (const auto &vertices : att_object_vertexes)
+    {
+      aiVector3D diff = vertices - bounding_sphere_center;
+      float      dist = diff.Length();
+      if (dist > bounding_sphere_radius)
+      {
+        // Move center toward vertex
+        float shift = (dist - bounding_sphere_radius) / (2.0f * dist);
+        bounding_sphere_center += diff * shift;
+        bounding_sphere_radius = (bounding_sphere_radius + dist) * 0.5f;
+      }
+    }
+  }
+};
+
+}; // namespace algorithm
+double roundToDecimals(double value, int decimals)
+{
+  double factor = std::pow(10.0, decimals);
+  return std::round(value * factor) / factor;
+}
+}; // namespace utils
 
 namespace detection_6d {
 
@@ -46,17 +135,11 @@ static std::pair<Eigen::Vector3f, Eigen::Vector3f> FindMinMaxVertex(const aiMesh
 
 static float CalcMeshDiameter(const aiMesh *mesh)
 {
-  float max_dist = 0.0;
-  for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
-  {
-    for (unsigned int j = i + 1; j < mesh->mNumVertices; ++j)
-    {
-      aiVector3D diff = mesh->mVertices[i] - mesh->mVertices[j];
-      float      dist = diff.Length();
-      max_dist        = std::max(max_dist, dist);
-    }
-  }
-  return max_dist;
+  if (!mesh || mesh->mNumVertices == 0)
+    return 0.0f;
+  const auto& [c,r]=utils::algorithm::Ritter_bounding_sphere(mesh->mVertices,mesh->mNumVertices).get_approximation_bounding_sphere();
+  // Approximate diameter = 2 * radius
+  return (2.0f * r);
 }
 
 static void ComputeOBB(const aiMesh    *mesh,
@@ -184,10 +267,6 @@ AssimpMeshLoader::AssimpMeshLoader(const std::string &name, const std::string &m
   auto min_max_vertex = FindMinMaxVertex(mesh);
   mesh_center_        = (min_max_vertex.second + min_max_vertex.first) / 2.0;
 
-  if (mesh->mTextureCoords[0] == nullptr)
-  {
-    throw std::runtime_error("[AssimpMeshLoader] Got invalid texturecoords!");
-  }
   // Walk through each of the mesh's vertices
   for (unsigned int v = 0; v < mesh->mNumVertices; v++)
   {
@@ -197,8 +276,11 @@ AssimpMeshLoader::AssimpMeshLoader(const std::string &name, const std::string &m
     Eigen::Vector3f normal{mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z};
     vertex_normals_.push_back(normal);
 
-    Eigen::Vector3f tex_coord{mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y,
-                              mesh->mTextureCoords[0][v].z};
+    Eigen::Vector3f tex_coord{0.0, 0.0, 0.0};
+    if (mesh->mTextureCoords[0] != nullptr)
+    {
+      tex_coord = Eigen::Vector3f{mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y,mesh->mTextureCoords[0][v].z};
+    }
     texcoords_.push_back(tex_coord);
   }
 
