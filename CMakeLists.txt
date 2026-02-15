@@ -3,7 +3,7 @@ project(foundationpose_cpp)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-link_directories()
+
 
 add_subdirectory(easy_deploy_tool)
 add_subdirectory(detection_6d_foundationpose)

@@ -3,3 +3,5 @@ build
 models
 .vscode
 mustard0
+build*/
+trial/

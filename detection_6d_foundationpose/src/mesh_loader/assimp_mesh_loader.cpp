@@ -141,6 +141,20 @@ static float CalcMeshDiameter(const aiMesh *mesh)
   // Approximate diameter = 2 * radius
   return (2.0f * r);
 }
+// static float CalcMeshDiameter(const aiMesh *mesh)
+// {
+//   float max_dist = 0.0;
+//   for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
+//   {
+//     for (unsigned int j = i + 1; j < mesh->mNumVertices; ++j)
+//     {
+//       aiVector3D diff = mesh->mVertices[i] - mesh->mVertices[j];
+//       float      dist = diff.Length();
+//       max_dist        = std::max(max_dist, dist);
+//     }
+//   }
+//   return max_dist;
+// }
 
 static void ComputeOBB(const aiMesh    *mesh,
                        Eigen::Matrix4f &out_orient_bbox,
@@ -253,9 +267,9 @@ AssimpMeshLoader::AssimpMeshLoader(const std::string &name, const std::string &m
   }
 
   Assimp::Importer importer;
-  const aiScene   *scene =
-      importer.ReadFile(mesh_file_path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
-                                            aiProcess_SortByPType);
+  // const aiScene   *scene =importer.ReadFile(mesh_file_path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |aiProcess_SortByPType);
+  // const aiScene   *scene = importer.ReadFile(mesh_file_path, aiProcessPreset_TargetRealtime_Quality | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+  const aiScene   *scene = importer.ReadFile(mesh_file_path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_GenSmoothNormals | aiProcess_RemoveRedundantMaterials | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_ImproveCacheLocality | aiProcess_FindDegenerates | aiProcess_FindInvalidData);
   if (scene == nullptr)
   {
     throw std::runtime_error("[AssimpMeshLoader] Failed to read mesh file: " + mesh_file_path);

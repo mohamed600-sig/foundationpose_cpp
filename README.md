@@ -122,3 +122,11 @@ Test results on public mustard dataset:
 - [EasyDeploy](https://github.com/zz990099/EasyDeploy)
 
 For any questions, feel free to raise a issue or contact `771647586@qq.com`.
+
+requred command :
+
+```bash
+sudo apt install libnvinfer10=10.9.0.34-1+cuda12.8 libnvinfer-plugin10=10.9.0.34-1+cuda12.8 
+
+sudo apt install libnvonnxparsers10=10.9.0.34-1+cuda12.8  libnvinfer-vc-plugin10=10.9.0.34-1+cuda12.8  
+```
