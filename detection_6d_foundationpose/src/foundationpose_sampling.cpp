@@ -209,7 +209,7 @@ std::vector<Eigen::Matrix4f> SampleViewsIcosphere(unsigned int n_views)
  * @param inplane_step 默认60
  * @return std::vector<Eigen::Matrix4f>
  */
-std::vector<Eigen::Matrix4f> MakeRotationGrid(unsigned int n_views = 50, int inplane_step = 360)//<dk> work on n_views </dk> 10,80
+std::vector<Eigen::Matrix4f> MakeRotationGrid(unsigned int n_views = 40, int inplane_step = 180)//<dk> work on n_views </dk> 10,80
 {
   auto cam_in_obs = SampleViewsIcosphere(n_views);
   std::cout<<"cam_in_obs size= "<<cam_in_obs.size()<<std::endl;
@@ -302,12 +302,14 @@ bool GuessTranslation(const Eigen::MatrixXf  &depth,
 FoundationPoseSampler::FoundationPoseSampler(const int              max_input_image_H,
                                              const int              max_input_image_W,
                                              const float            min_depth,
-                                             const Eigen::Matrix3f &intrinsic)
+                                             const Eigen::Matrix3f &intrinsic,
+                                            uint16_t rotation_grid_n_views , 
+                                            uint16_t rotation_grid_inplane_step)
     : max_input_image_H_(max_input_image_H),
       max_input_image_W_(max_input_image_W),
       min_depth_(min_depth),
       intrinsic_(intrinsic),
-      pre_compute_rotations_(MakeRotationGrid())
+      pre_compute_rotations_(MakeRotationGrid(rotation_grid_n_views,rotation_grid_inplane_step))
 {
   CHECK_CUDA_THROW(cudaStreamCreate(&cuda_stream_),
                    "[FoundationPoseSampler] Failed to create cuda stream!!");

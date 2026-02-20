@@ -11,6 +11,49 @@ namespace detection_6d {
 
 class FoundationPose : public Base6DofDetectionModel {
 public:
+  typedef struct ModelBlobMetadata {
+    /**
+     *
+     *
+     *
+     *
+     *
+     */
+    // Default blob input name
+    std::string RENDER_INPUT_BLOB_NAME;
+    std::string TRANSF_INPUT_BLOB_NAME;
+    std::string REFINE_TRANS_OUT_BLOB_NAME;
+    std::string REFINE_ROT_OUT_BLOB_NAME;
+    std::string SCORE_OUTPUT_BLOB_NAME;
+    float       REFINE_ROT_NORMALIZER;
+    // render parameters
+    int   MAX_HYPO_NUM;
+    float REFINE_CROP_RATIO;
+    float SCORE_CROP_RATIO;
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     *
+     */
+    ModelBlobMetadata()
+        : RENDER_INPUT_BLOB_NAME("render_input"),
+          TRANSF_INPUT_BLOB_NAME("transf_input"),
+          REFINE_TRANS_OUT_BLOB_NAME("trans"),
+          REFINE_ROT_OUT_BLOB_NAME("rot"),
+          SCORE_OUTPUT_BLOB_NAME("scores"),
+          REFINE_ROT_NORMALIZER(0.349065850398865),
+          REFINE_CROP_RATIO(1.2),
+          SCORE_CROP_RATIO(1.1),
+          MAX_HYPO_NUM(252)
+    {}
+
+  } ModelBlobMetadata_t;
+
+public:
   /**
    * @brief 使用多个目标的mesh构建一个FoundationPose实例
    *
@@ -34,6 +77,25 @@ public:
                  const int                                           crop_window_H     = 160,
                  const int                                           crop_window_W     = 160,
                  const float                                         min_depth         = 0.001);
+  /**
+   *
+   *
+   *
+   *
+   *
+   */
+  FoundationPose(std::shared_ptr<inference_core::BaseInferCore>      refiner_core,
+                 std::shared_ptr<inference_core::BaseInferCore>      scorer_core,
+                 const std::vector<std::shared_ptr<BaseMeshLoader>> &mesh_loaders,
+                 const Eigen::Matrix3f                              &intrinsic,
+                 const ModelBlobMetadata_t &model_blob_metadata = ModelBlobMetadata(),
+                 const uint16_t             rotation_grid_n_views=40,
+                 const uint16_t             rotation_grid_inplane_step=60,
+                 const int                  max_input_image_H = 1080,
+                 const int                  max_input_image_W = 1920,
+                 const int                  crop_window_H     = 160,
+                 const int                  crop_window_W     = 160,
+                 const float                min_depth         = 0.001);
 
   bool Register(const cv::Mat     &rgb,
                 const cv::Mat     &depth,
@@ -75,17 +137,17 @@ private:
 private:
   // 以下参数不对外开放
   // 默认的blob输入名称
-  const std::string RENDER_INPUT_BLOB_NAME     = "render_input";
-  const std::string TRANSF_INPUT_BLOB_NAME     = "transf_input";
-  const std::string REFINE_TRANS_OUT_BLOB_NAME = "trans";
-  const std::string REFINE_ROT_OUT_BLOB_NAME   = "rot";
-  const float       REFINE_ROT_NORMALIZER      = 0.349065850398865;
-  const std::string SCORE_OUTPUT_BLOB_NAME     = "scores";
+  std::string RENDER_INPUT_BLOB_NAME;
+  std::string TRANSF_INPUT_BLOB_NAME;
+  std::string REFINE_TRANS_OUT_BLOB_NAME;
+  std::string REFINE_ROT_OUT_BLOB_NAME;
+  std::string SCORE_OUTPUT_BLOB_NAME;
+  float       REFINE_ROT_NORMALIZER;
   // render参数
-  const int   score_mode_poses_num_   = 252;
-  const int   refine_mode_poses_num_  = 1;
-  const float refine_mode_crop_ratio_ = 1.2;
-  const float score_mode_crop_ratio_  = 1.1;
+  int       score_mode_poses_num_;
+  float     refine_mode_crop_ratio_;
+  float     score_mode_crop_ratio_;
+  const int refine_mode_poses_num_ = 1;
 
 private:
   // 以下参数对外开放，通过构造函数传入
@@ -114,13 +176,46 @@ FoundationPose::FoundationPose(std::shared_ptr<inference_core::BaseInferCore>   
                                const int   crop_window_H,
                                const int   crop_window_W,
                                const float min_depth)
+    : FoundationPose(refiner_core,
+                     scorer_core,
+                     mesh_loaders,
+                     intrinsic,
+                     ModelBlobMetadata(),
+                     max_input_image_H,
+                     max_input_image_W,
+                     crop_window_H,
+                     crop_window_W,
+                     min_depth)
+{}
+
+FoundationPose::FoundationPose(std::shared_ptr<inference_core::BaseInferCore>      refiner_core,
+                               std::shared_ptr<inference_core::BaseInferCore>      scorer_core,
+                               const std::vector<std::shared_ptr<BaseMeshLoader>> &mesh_loaders,
+                               const Eigen::Matrix3f                              &intrinsic,
+                               const ModelBlobMetadata_t &model_blob_metadata,
+                               const uint16_t             rotation_grid_n_views,
+                               const uint16_t             rotation_grid_inplane_step,
+                               const int                  max_input_image_H,
+                               const int                  max_input_image_W,
+                               const int                  crop_window_H,
+                               const int                  crop_window_W,
+                               const float                min_depth)
     : refiner_core_(refiner_core),
       scorer_core_(scorer_core),
       intrinsic_(intrinsic),
       max_input_image_H_(max_input_image_H),
       max_input_image_W_(max_input_image_W),
       crop_window_H_(crop_window_H),
-      crop_window_W_(crop_window_W)
+      crop_window_W_(crop_window_W),
+      RENDER_INPUT_BLOB_NAME(model_blob_metadata.RENDER_INPUT_BLOB_NAME),
+      TRANSF_INPUT_BLOB_NAME(model_blob_metadata.TRANSF_INPUT_BLOB_NAME),
+      REFINE_TRANS_OUT_BLOB_NAME(model_blob_metadata.REFINE_TRANS_OUT_BLOB_NAME),
+      REFINE_ROT_OUT_BLOB_NAME(model_blob_metadata.REFINE_ROT_OUT_BLOB_NAME),
+      SCORE_OUTPUT_BLOB_NAME(model_blob_metadata.SCORE_OUTPUT_BLOB_NAME),
+      score_mode_poses_num_(model_blob_metadata.MAX_HYPO_NUM),
+      REFINE_ROT_NORMALIZER(model_blob_metadata.REFINE_ROT_NORMALIZER),
+      refine_mode_crop_ratio_(model_blob_metadata.REFINE_CROP_RATIO),
+      score_mode_crop_ratio_(model_blob_metadata.SCORE_CROP_RATIO)
 {
   // Check
   auto refiner_blobs_buffer = refiner_core->GetBuffer(true);
@@ -455,6 +550,34 @@ std::shared_ptr<Base6DofDetectionModel> CreateFoundationPoseModel(
 {
   return std::make_shared<FoundationPose>(refiner_core, scorer_core, mesh_loaders, intrinsic_in_mat,
                                           max_input_image_height, max_input_image_width);
+}
+
+std::shared_ptr<Base6DofDetectionModel> CreateFoundationPoseModel(
+    std::shared_ptr<inference_core::BaseInferCore>      refiner_core,
+    std::shared_ptr<inference_core::BaseInferCore>      scorer_core,
+    const std::vector<std::shared_ptr<BaseMeshLoader>> &mesh_loaders,
+    const Eigen::Matrix3f                              &intrinsic_in_mat,
+    const std::string                                  &render_input_layer_name,
+    const std::string                                  &transf_input_layer_name,
+    const std::string                                  &refine_trans_output_layer_name,
+    const std::string                                  &refine_rot_output_layer_name,
+    const std::string                                  &score_output_layer_name,
+    const int                                           max_number_of_hypothesis,
+    const int                                           rotation_grid_n_views,
+    const int                                           rotation_grid_inplane_step,
+    const int                                           max_input_image_height,
+    const int                                           max_input_image_width)
+{
+  FoundationPose::ModelBlobMetadata_t local_modelBlobMetadata;
+  local_modelBlobMetadata.MAX_HYPO_NUM               = max_number_of_hypothesis;
+  local_modelBlobMetadata.REFINE_ROT_OUT_BLOB_NAME   = refine_rot_output_layer_name;
+  local_modelBlobMetadata.REFINE_TRANS_OUT_BLOB_NAME = refine_trans_output_layer_name;
+  local_modelBlobMetadata.RENDER_INPUT_BLOB_NAME     = render_input_layer_name;
+  local_modelBlobMetadata.SCORE_OUTPUT_BLOB_NAME     = score_output_layer_name;
+  local_modelBlobMetadata.TRANSF_INPUT_BLOB_NAME     = transf_input_layer_name;
+  return std::make_shared<FoundationPose>(refiner_core, scorer_core, mesh_loaders, intrinsic_in_mat,
+                                          local_modelBlobMetadata,rotation_grid_n_views,rotation_grid_inplane_step,max_input_image_height,
+                                          max_input_image_width);
 }
 
 } // namespace detection_6d

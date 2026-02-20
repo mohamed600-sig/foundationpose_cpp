@@ -104,4 +104,25 @@ std::shared_ptr<Base6DofDetectionModel> CreateFoundationPoseModel(
     const int                                           max_input_image_height = 1080,
     const int                                           max_input_image_width  = 1920);
 
+/**
+ *
+ *
+ *
+ *
+ */
+std::shared_ptr<Base6DofDetectionModel> CreateFoundationPoseModel(
+    std::shared_ptr<inference_core::BaseInferCore>      refiner_core,
+    std::shared_ptr<inference_core::BaseInferCore>      scorer_core,
+    const std::vector<std::shared_ptr<BaseMeshLoader>> &mesh_loaders,
+    const Eigen::Matrix3f                              &intrinsic_in_mat,
+    const std::string                                  &render_input_layer_name,
+    const std::string                                  &transf_input_layer_name,
+    const std::string                                  &refine_trans_output_layer_name,
+    const std::string                                  &refine_rot_output_layer_name,
+    const std::string                                  &score_output_layer_name,
+    const int                                           max_number_of_hypothesis=252,
+    const int                                           rotation_grid_n_views=40,
+    const int                                           rotation_grid_inplane_step=60,
+    const int                                           max_input_image_height = 1080,
+    const int                                           max_input_image_width  = 1920);
 } // namespace detection_6d
