@@ -9,15 +9,11 @@
 
 using namespace inference_core;
 using namespace detection_6d;
-// static const std::string __root_path = "/home/mohamed/My_Working_Dir/Github_Repo/foundationpose";
 static const std::string __root_path = "/workspace";
 static const std::string refiner_engine_path_ = __root_path + "/models/nvidia_refiner.engine";
 static const std::string scorer_engine_path_ =  __root_path + "/models/nvidia_scorer.engine";
 static const std::string demo_data_path_        = __root_path + "/test_data/mustard0";
 static const std::string demo_textured_obj_path = demo_data_path_ + "/mesh/textured_simple.obj";
-// static const std::string demo_textured_obj_path ="/home/mohamed/mycobot_ws/src/Mycobot_IntelligentRoboticAssemblySystem/mycobot_perception/resources/Bottom_part.stl";
-// static const std::string demo_textured_obj_path ="/home/mohamed/My_Working_Dir/Github_Repo/foundationpose_cpp/test_data/test_stls/output.stl";
-// static const std::string demo_textured_obj_path ="/home/mohamed/My_Working_Dir/Github_Repo/foundationpose_cpp/test_data/test_stls/output.stl";
 // static const std::string demo_textured_obj_path =demo_data_path_+ "/mesh/3DBenchy_m.stl";
 static const std::string demo_textured_map_path = demo_data_path_ + "/mesh/texture_map.png";
 static const std::string demo_name_             = "mustard";
@@ -44,7 +40,6 @@ std::tuple<std::shared_ptr<Base6DofDetectionModel>, std::shared_ptr<BaseMeshLoad
   auto mesh_loader = CreateAssimpMeshLoader(demo_name_, demo_textured_obj_path);
   CHECK(mesh_loader != nullptr);
 
-  // auto foundation_pose =CreateFoundationPoseModel(refiner_core, scorer_core, {mesh_loader}, intrinsic_in_mat);
   auto foundation_pose =CreateFoundationPoseModel(refiner_core, scorer_core, {mesh_loader}, intrinsic_in_mat,"input1","input2","output1","output2","output1",128);
 
   return {foundation_pose, mesh_loader};
