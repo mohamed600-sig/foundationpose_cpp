@@ -209,7 +209,7 @@ std::vector<Eigen::Matrix4f> SampleViewsIcosphere(unsigned int n_views)
  * @param inplane_step 默认60
  * @return std::vector<Eigen::Matrix4f>
  */
-std::vector<Eigen::Matrix4f> MakeRotationGrid(unsigned int n_views = 40, int inplane_step = 180)//<dk> work on n_views </dk> 10,80
+std::vector<Eigen::Matrix4f> MakeRotationGrid(unsigned int n_views = 10, int inplane_step = 40)//<dk> work on n_views </dk> 10,80
 {
   auto cam_in_obs = SampleViewsIcosphere(n_views);
   std::cout<<"cam_in_obs size= "<<cam_in_obs.size()<<std::endl;

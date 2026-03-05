@@ -14,8 +14,8 @@ public:
                         const int              max_input_image_W,
                         const float            min_depth,
                         const Eigen::Matrix3f &intrinsic,
-                        uint16_t               rotation_grid_n_views      = 40,
-                        uint16_t               rotation_grid_inplane_step = 180);
+                        uint16_t               rotation_grid_n_views,
+                        uint16_t               rotation_grid_inplane_step);
 
   bool GetHypPoses(void                         *_depth_on_device,
                    void                         *_mask_on_host,

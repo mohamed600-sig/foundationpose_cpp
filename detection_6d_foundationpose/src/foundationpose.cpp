@@ -244,7 +244,7 @@ FoundationPose::FoundationPose(std::shared_ptr<inference_core::BaseInferCore>   
   }
 
   hyp_poses_sampler_ = std::make_shared<FoundationPoseSampler>(
-      max_input_image_H_, max_input_image_W_, min_depth, intrinsic_);
+      max_input_image_H_, max_input_image_W_, min_depth, intrinsic_,rotation_grid_n_views,rotation_grid_inplane_step);
 }
 
 bool FoundationPose::CheckInputArguments(const cv::Mat     &rgb,
