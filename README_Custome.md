@@ -20,4 +20,15 @@ sudo dpkg -i cvcuda-lib-0.15.0-cuda12-x86_64-linux.deb && sudo dpkg -i cvcuda-de
 
 rm cvcuda-lib-0.15.0-cuda12-x86_64-linux.deb && rm cvcuda-dev-0.15.0-cuda12-x86_64-linux.deb
 ```
+## jetson (JP36.4.7)
+
+### cv-cuda
+```bash
+
+wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.15.0/cvcuda-lib-0.15.0-cuda12-aarch64-linux.deb && wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.15.0/cvcuda-dev-0.15.0-cuda12-aarch64-linux.deb
+sudo dpkg -i cvcuda-lib-0.15.0-cuda12-aarch64-linux.deb && sudo dpkg -i cvcuda-dev-0.15.0-cuda12-aarch64-linux.deb
+rm cvcuda-lib-0.15.0-cuda12-aarch64-linux.deb && rm cvcuda-dev-0.15.0-cuda12-aarch64-linux.deb
+
+```
+
 ---
